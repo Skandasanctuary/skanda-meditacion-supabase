@@ -1,0 +1,17 @@
+{
+  "name": "skanda-meditacion-supabase",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reto de Meditación de 11 Días: login, progreso por día, audio y reflexión con Supabase",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/app.js --bundle --minify --format=esm --outfile=public/app.js",
+    "preview": "node dev/preview-server.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "latest"
+  },
+  "devDependencies": {
+    "esbuild": "latest"
+  }
+}

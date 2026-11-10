@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu espacio de práctica · Skanda Sanctuary</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='16' fill='%23194030'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23C19A5B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=EB+Garamond:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <div class="brands">
+      <img class="logo-sk" src="/images/skanda-logo.png" width="700" height="217" alt="Skanda Sanctuary">
+      <span class="x" aria-hidden="true">×</span>
+      <img class="logo-mh" src="/images/maestra-holistica-logo.png" width="800" height="126" alt="Maestra Holística">
+    </div>
+    <button id="logout" class="linkbtn" type="button" hidden>Salir</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="loading" class="center"><p>Cargando…</p></section>
+
+  <!-- Entrar / crear cuenta -->
+  <section id="auth" hidden>
+    <div class="auth-card">
+      <h1>Tu espacio de práctica</h1>
+      <p class="lead">Entra para escuchar el audio de cada día y marcar tu avance en el reto.</p>
+      <div class="seg" role="tablist" aria-label="Acceso">
+        <button type="button" role="tab" id="tab-login" aria-selected="true">Entrar</button>
+        <button type="button" role="tab" id="tab-signup" aria-selected="false">Crear cuenta</button>
+      </div>
+      <form id="auth-form" novalidate>
+        <div id="signup-fields" class="fields" hidden>
+          <label>Nombre<input id="name" type="text" autocomplete="given-name"></label>
+          <label>Número de WhatsApp<input id="phone" type="tel" autocomplete="tel" placeholder="+57 300 000 0000"></label>
+          <label>Ciudad<input id="city" type="text" autocomplete="address-level2"></label>
+          <label>País<input id="country" type="text" autocomplete="country-name" placeholder="Colombia"></label>
+        </div>
+        <label>Correo electrónico<input id="email" type="email" autocomplete="email" required></label>
+        <label>Contraseña<input id="password" type="password" autocomplete="current-password" minlength="8" required></label>
+        <button class="btn" id="auth-submit" type="submit">Entrar</button>
+        <p id="auth-msg" class="msg" role="status" aria-live="polite"></p>
+      </form>
+      <p class="fine">Tu correo solo se usa para tu cuenta y para enviarte información del reto.</p>
+    </div>
+  </section>
+
+  <!-- Último paso: datos de la persona -->
+  <section id="profile" hidden>
+    <div class="auth-card">
+      <h1>Un último paso</h1>
+      <p class="lead">Cuéntanos un poco sobre ti para acompañarte durante el reto.</p>
+      <form id="profile-form" novalidate>
+        <label>Nombre<input id="p-name" type="text" autocomplete="given-name"></label>
+        <label>Número de WhatsApp<input id="p-phone" type="tel" autocomplete="tel" placeholder="+57 300 000 0000"></label>
+        <label>Ciudad<input id="p-city" type="text" autocomplete="address-level2"></label>
+        <label>País<input id="p-country" type="text" autocomplete="country-name" placeholder="Colombia"></label>
+        <button class="btn" id="p-submit" type="submit">Guardar y continuar</button>
+        <p id="p-msg" class="msg" role="status" aria-live="polite"></p>
+      </form>
+      <p class="fine">Usamos estos datos solo para acompañarte en el reto y avisarte de próximos programas.</p>
+    </div>
+  </section>
+
+  <!-- Panel de la persona -->
+  <section id="app" hidden>
+    <div class="hello">
+      <h1 id="hello"></h1>
+      <p id="status" class="lead"></p>
+      <p id="testmode" class="testbanner" hidden>Modo de prueba: todos los días están abiertos.</p>
+    </div>
+    <div class="grid">
+      <div class="ring" id="ring" aria-label="Tus once días"></div>
+      <div class="card" id="day-card" aria-live="polite"></div>
+    </div>
+    <div id="finish" class="finish" hidden></div>
+  </section>
+
+  <noscript><p class="center">Necesitas activar JavaScript para usar esta página.</p></noscript>
+</main>
+
+<script type="module" src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+:root{
+  --ink:#10291e; --forest:#163829; --forest-mid:#275f49; --gold:#c69f58; --gold-hi:#e0bd78;
+  --mist:#f4faf6; --on-light:#153124; --muted:#4c6a5b; --muted-dark:#b2cfc1;
+  --serif:"EB Garamond","Lora",Georgia,serif;
+  --sans:"Hanken Grotesk","Poppins",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--sans);font-size:1.0625rem;line-height:1.6;color:var(--on-light);background:var(--mist);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:-.012em;margin:0}
+p{margin:0}
+[hidden]{display:none !important}
+.wrap{width:min(1040px,100% - 2rem);margin-inline:auto}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:6px}
+.center{text-align:center;padding:5rem 0;color:var(--muted)}
+
+.top{background:var(--ink);padding-block:1rem}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.brands{display:flex;align-items:center;gap:.9rem}
+.brands img{display:block}
+.logo-sk{height:38px;width:auto}.logo-mh{height:24px;width:auto}
+.x{color:var(--gold);opacity:.8;font:300 1.1rem/1 var(--serif)}
+.linkbtn{background:none;border:0;color:var(--muted-dark);font:500 .95rem var(--sans);cursor:pointer;text-decoration:underline;text-underline-offset:.25em}
+.linkbtn:hover{color:#fff}
+
+.btn{display:inline-block;font:600 1rem/1 var(--sans);border:0;cursor:pointer;padding:1.05rem 1.6rem;border-radius:999px;background:var(--gold);color:#0d2218;transition:background .2s,transform .2s}
+.btn:hover{background:var(--gold-hi);transform:translateY(-1px)}
+.btn:disabled{opacity:.6;cursor:wait;transform:none}
+
+/* Entrar */
+.auth-card{max-width:460px;margin:2.5rem auto 4rem;background:#fff;border:1px solid rgba(39,95,73,.15);border-radius:22px;padding:2rem 1.6rem;box-shadow:0 8px 30px rgba(22,56,41,.06)}
+.auth-card h1{font-size:2.2rem;line-height:1.1}
+.lead{margin-top:.6rem;color:var(--muted)}
+.seg{display:flex;margin:1.4rem 0 1.2rem;border:2px solid var(--forest-mid);border-radius:999px;overflow:hidden}
+.seg button{flex:1;border:0;background:transparent;color:var(--forest-mid);font:500 .95rem var(--sans);padding:.7rem;cursor:pointer}
+.seg button[aria-selected="true"]{background:var(--forest-mid);color:#fff}
+form,.fields{display:grid;gap:1rem}
+label{display:grid;gap:.4rem;font-size:.92rem;font-weight:500}
+input{font:inherit;color:var(--ink);background:var(--mist);border:2px solid rgba(39,95,73,.2);border-radius:12px;padding:.9rem 1rem;width:100%}
+input:focus{outline:none;border-color:var(--gold);background:#fff}
+.msg{min-height:1.4rem;font-weight:500;color:var(--forest-mid)}
+.msg.err{color:#a3402f}
+.fine{margin-top:1rem;font-size:.85rem;color:var(--muted)}
+
+/* Panel */
+.hello{padding:2rem 0 1rem}
+.hello h1{font-size:clamp(1.9rem,4vw,2.8rem);line-height:1.1}
+.testbanner{margin-top:.8rem;display:inline-block;background:#fff3d6;border:1px solid var(--gold);border-radius:10px;padding:.4rem .8rem;font-size:.9rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(1.5rem,4vw,3.5rem);align-items:center;padding-bottom:3rem}
+
+.ring{position:relative;width:min(100%,400px);aspect-ratio:1;margin-inline:auto}
+.ring svg{position:absolute;inset:0;width:100%;height:100%;color:rgba(22,56,41,.2)}
+.ring-center{position:absolute;inset:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.ring-center .big{font:400 clamp(3.6rem,12vw,5.8rem)/.9 var(--serif);letter-spacing:-.04em;color:var(--ink)}
+.ring-center .small{margin-top:.4rem;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.bead{position:absolute;width:12.5%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:2px solid transparent;padding:0;display:grid;place-items:center;font:500 clamp(.9rem,2.4vw,1.15rem)/1 var(--serif);cursor:pointer;transition:transform .2s,background .4s,box-shadow .4s}
+.bead.locked{background:#d3e5da;color:#7a9486;cursor:default;opacity:.85}
+.bead.available{background:var(--forest-mid);color:#fff;border-color:var(--gold)}
+.bead.completed{background:radial-gradient(circle at 34% 30%,#f3dca3 0%,var(--gold) 55%,#9f7a38 100%);color:#0d2218;box-shadow:0 3px 10px rgba(159,122,56,.4)}
+.bead.sel{transform:translate(-50%,-50%) scale(1.22);box-shadow:0 0 0 4px rgba(198,159,88,.35)}
+.bead:not(.locked):hover{transform:translate(-50%,-50%) scale(1.12)}
+.bead.sel:hover{transform:translate(-50%,-50%) scale(1.22)}
+.bead.pop{animation:pop .6s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(.5)}100%{transform:translate(-50%,-50%) scale(1.22)}}
+
+.card{background:#fff;border:1px solid rgba(39,95,73,.15);border-radius:22px;padding:1.8rem 1.6rem;box-shadow:0 8px 30px rgba(22,56,41,.06)}
+.card .when{font-size:.9rem;color:var(--muted);font-weight:500}
+.card h2{margin-top:.5rem;font-size:clamp(1.9rem,3.4vw,2.5rem);line-height:1.1}
+.card .desc{margin-top:.8rem;color:var(--muted)}
+.card audio{display:block;width:100%;margin-top:1.3rem}
+.card .btn{margin-top:1.3rem}
+.badge{display:inline-block;margin-top:1.1rem;background:#eaf6ee;color:var(--forest-mid);font:600 .85rem/1 var(--sans);padding:.55rem .85rem;border-radius:999px}
+.locknote{margin-top:1.2rem;padding:1rem;border-radius:12px;background:#eef4f0;color:var(--muted)}
+.audio-missing{margin-top:1rem;font-size:.9rem;color:var(--muted)}
+.quote{margin:1.4rem 0 0;padding:1.1rem 1.2rem;border-left:3px solid var(--gold);background:#f6efe0;border-radius:0 14px 14px 0}
+.quote .label{font:600 .72rem/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:#8a6a2d}
+.quote p{margin-top:.55rem;font:italic 400 1.35rem/1.35 var(--serif);color:var(--ink)}
+.quote.reveal{animation:reveal .9s ease both}
+@keyframes reveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.finish{margin:0 0 3rem;padding:1.6rem;border-radius:18px;background:var(--ink);color:var(--mist);text-align:center}
+.finish h2{font-size:1.9rem;color:#fff}
+.finish p{margin-top:.6rem;color:var(--muted-dark)}
+
+@media (max-width:820px){.grid{grid-template-columns:1fr}.hello{padding-top:1.4rem}}
+@media (max-width:520px){.brands{gap:.5rem;min-width:0}.logo-sk{height:30px}.logo-mh{height:20px}.card,.auth-card{padding:1.4rem 1.2rem}}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
