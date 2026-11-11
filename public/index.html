@@ -19,7 +19,10 @@
       <span class="x" aria-hidden="true">×</span>
       <img class="logo-mh" src="/images/maestra-holistica-logo.png" width="800" height="126" alt="Maestra Holística">
     </div>
-    <button id="logout" class="linkbtn" type="button" hidden>Salir</button>
+    <div class="barlinks" id="barlinks" hidden>
+      <button id="change-pwd" class="linkbtn" type="button" hidden>Cambiar contraseña</button>
+      <button id="logout" class="linkbtn" type="button" hidden>Salir</button>
+    </div>
   </div>
 </header>
 
@@ -36,18 +39,32 @@
         <button type="button" role="tab" id="tab-signup" aria-selected="false">Crear cuenta</button>
       </div>
       <form id="auth-form" novalidate>
-        <div id="signup-fields" class="fields" hidden>
-          <label>Nombre<input id="name" type="text" autocomplete="given-name"></label>
-          <label>Número de WhatsApp<input id="phone" type="tel" autocomplete="tel" placeholder="+57 300 000 0000"></label>
-          <label>Ciudad<input id="city" type="text" autocomplete="address-level2"></label>
-          <label>País<input id="country" type="text" autocomplete="country-name" placeholder="Colombia"></label>
-        </div>
         <label>Correo electrónico<input id="email" type="email" autocomplete="email" required></label>
-        <label>Contraseña<input id="password" type="password" autocomplete="current-password" minlength="8" required></label>
+        <label id="row-phone" hidden>Número de WhatsApp<input id="phone" type="tel" autocomplete="tel" placeholder="+57 300 000 0000"></label>
+        <label id="row-secret">Contraseña<input id="secret" type="password" autocomplete="current-password"></label>
+        <label class="check-inline" id="row-show"><input type="checkbox" id="show-secret"> Mostrar contraseña</label>
+        <p class="hint" id="auth-hint">Si no la has cambiado, tu contraseña es tu número de WhatsApp (con o sin código de país).</p>
         <button class="btn" id="auth-submit" type="submit">Entrar</button>
         <p id="auth-msg" class="msg" role="status" aria-live="polite"></p>
+        <button class="linkbtn dark" id="forgot" type="button">¿Olvidaste tu contraseña?</button>
       </form>
-      <p class="fine">Tu correo solo se usa para tu cuenta y para enviarte información del reto.</p>
+      <p class="fine">Tu correo y tu número solo se usan para tu cuenta y para acompañarte en el reto.</p>
+    </div>
+  </section>
+
+  <!-- Cambiar contraseña (también se usa al volver desde el correo de "olvidé mi contraseña") -->
+  <section id="pwd" hidden>
+    <div class="auth-card">
+      <h1 id="pwd-title">Cambiar contraseña</h1>
+      <p class="lead" id="pwd-lead">Elige una contraseña nueva de al menos 8 caracteres. Desde ahora la usarás en lugar de tu número de WhatsApp.</p>
+      <form id="pwd-form" novalidate>
+        <label>Contraseña nueva<input id="pwd-new" type="password" autocomplete="new-password"></label>
+        <label>Repite la contraseña<input id="pwd-new2" type="password" autocomplete="new-password"></label>
+        <button class="btn" id="pwd-submit" type="submit">Guardar contraseña</button>
+        <button class="linkbtn dark" id="pwd-cancel" type="button">Cancelar</button>
+        <p id="pwd-msg" class="msg" role="status" aria-live="polite"></p>
+      </form>
+      <p class="fine">Guárdala bien. Si la olvidas, puedes pedir un enlace por correo desde la pantalla de entrada.</p>
     </div>
   </section>
 
@@ -55,11 +72,10 @@
   <section id="profile" hidden>
     <div class="auth-card">
       <h1>Un último paso</h1>
-      <p class="lead">Cuéntanos un poco sobre ti para acompañarte durante el reto.</p>
+      <p class="lead">No encontramos tus datos de inscripción con este correo. Cuéntanos un poco sobre ti para acompañarte durante el reto.</p>
       <form id="profile-form" novalidate>
         <label>Nombre<input id="p-name" type="text" autocomplete="given-name"></label>
         <label>Número de WhatsApp<input id="p-phone" type="tel" autocomplete="tel" placeholder="+57 300 000 0000"></label>
-        <label>Ciudad<input id="p-city" type="text" autocomplete="address-level2"></label>
         <label>País<input id="p-country" type="text" autocomplete="country-name" placeholder="Colombia"></label>
         <button class="btn" id="p-submit" type="submit">Guardar y continuar</button>
         <p id="p-msg" class="msg" role="status" aria-live="polite"></p>

@@ -1,24 +1,33 @@
 // Pantalla de la persona: entrar, ver los 11 días, escuchar el audio y marcar el día (con Supabase).
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, PROGRAM_ID, AUDIO_BUCKET } from "./config.js";
-import { cleanProfile } from "./profile.js";
+import { cleanProfile, passwordFromPhone, passwordCandidates, checkNewPassword } from "./profile.js";
 
 const $ = (id) => document.getElementById(id);
-const views = { loading: $("loading"), auth: $("auth"), profile: $("profile"), app: $("app") };
-const PENDING = "pending_profile";
+const views = { loading: $("loading"), auth: $("auth"), pwd: $("pwd"), profile: $("profile"), app: $("app") };
 
 const configured = !SUPABASE_URL.includes("TU-PROYECTO") && !SUPABASE_PUBLISHABLE_KEY.includes("TU_CLAVE");
 const supabase = configured ? createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
+if (supabase) {
+  // Al llegar desde el enlace del correo, Supabase avisa con este evento: mostramos "contraseña nueva".
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY") { recovering = true; showPasswordForm(true); }
+  });
+}
 
 let state = null;          // estado listo para pintar
 let selected = 1;          // día que se está viendo
 let justCompleted = null;  // { day } para animar la reflexión recién desbloqueada
 let mode = "login";        // "login" | "signup"
+let recovering = false;    // true cuando la persona llega desde el correo de "olvidé mi contraseña"
+
 
 /* ---------- utilidades ---------- */
 function show(name) {
   for (const k in views) views[k].hidden = k !== name;
   $("logout").hidden = name !== "app";
+  $("change-pwd").hidden = name !== "app";
+  $("barlinks").hidden = name !== "app";
 }
 function el(tag, attrs = {}, ...kids) {
   const node = document.createElement(tag);
@@ -39,14 +48,10 @@ function when(iso) {
 }
 const LABEL = { completed: "completado", available: "disponible", locked: "aún cerrado" };
 
-const memory = {};
-const store = {
-  get(k) { try { return localStorage.getItem(k); } catch { return memory[k] ?? null; } },
-  set(k, v) { try { localStorage.setItem(k, v); } catch { memory[k] = v; } },
-  del(k) { try { localStorage.removeItem(k); } catch { delete memory[k]; } }
-};
-function readPending() {
-  try { return JSON.parse(store.get(PENDING) || "null"); } catch { return null; }
+/** Guardamos el número escrito al crear la cuenta, por si se confirma el correo desde otro lugar. */
+function rememberPhone(phone) { try { localStorage.setItem("pending_phone", phone); } catch {} }
+function takePhone() {
+  try { const p = localStorage.getItem("pending_phone"); localStorage.removeItem("pending_phone"); return p; } catch { return null; }
 }
 
 /** Un audio puede ser un enlace completo o el nombre de un archivo en Storage. */
@@ -58,18 +63,18 @@ function audioSrc(value) {
 /* ---------- datos (Supabase) ---------- */
 async function fetchProfile(userId) {
   const { data, error } = await supabase.from("profiles")
-    .select("display_name, phone, city, country").eq("user_id", userId).maybeSingle();
+    .select("display_name, phone, country").eq("user_id", userId).maybeSingle();
   if (error) throw error;
   return data;  // null si todavía no existe
 }
-const isComplete = (p) => Boolean(p && p.display_name && p.phone && p.city && p.country);
+const isComplete = (p) => Boolean(p && p.display_name && p.phone && p.country);
 
 async function saveProfile(userId, input) {
   const result = cleanProfile(input);
   if (!result.ok) return { ok: false, errors: result.errors };
   const v = result.value;
   const { error } = await supabase.from("profiles")
-    .upsert({ user_id: userId, display_name: v.name, phone: v.phone, city: v.city, country: v.country }, { onConflict: "user_id" });
+    .upsert({ user_id: userId, display_name: v.name, phone: v.phone, country: v.country }, { onConflict: "user_id" });
   if (error) return { ok: false, errors: { general: "No pudimos guardar tus datos. Intenta de nuevo." } };
   return { ok: true };
 }
@@ -95,9 +100,15 @@ function setMode(next) {
   mode = next;
   $("tab-login").setAttribute("aria-selected", String(next === "login"));
   $("tab-signup").setAttribute("aria-selected", String(next === "signup"));
-  $("signup-fields").hidden = next !== "signup";
   $("auth-submit").textContent = next === "signup" ? "Crear cuenta" : "Entrar";
-  $("password").autocomplete = next === "signup" ? "new-password" : "current-password";
+  const signup = next === "signup";
+  $("row-phone").hidden = !signup;
+  $("row-secret").hidden = signup;
+  $("row-show").hidden = signup;
+  $("forgot").hidden = signup;
+  $("auth-hint").textContent = signup
+    ? "Tu número de WhatsApp será tu contraseña inicial. Podrás cambiarla dentro de la app."
+    : "Si no la has cambiado, tu contraseña es tu número de WhatsApp (con o sin código de país).";
   authMessage("");
 }
 function authMessage(text, isError = false) {
@@ -109,39 +120,101 @@ $("auth-form").addEventListener("input", () => { if ($("auth-msg").classList.con
 $("tab-login").addEventListener("click", () => setMode("login"));
 $("tab-signup").addEventListener("click", () => setMode("signup"));
 
+$("show-secret").addEventListener("change", () => { $("secret").type = $("show-secret").checked ? "text" : "password"; });
+
 $("auth-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!configured) return;
   const email = $("email").value.trim();
-  const password = $("password").value;
-  if (!email || password.length < 8) return authMessage("Escribe tu correo y una contraseña de al menos 8 caracteres.", true);
-  const profile = { name: $("name").value.trim(), phone: $("phone").value.trim(), city: $("city").value.trim(), country: $("country").value.trim() };
-  if (mode === "signup" && (!profile.name || !profile.phone || !profile.city || !profile.country)) {
-    return authMessage("Completa tu nombre, WhatsApp, ciudad y país.", true);
+  if (!email) return authMessage("Escribe tu correo electrónico.", true);
+
+  const signup = mode === "signup";
+  const typed = signup ? $("phone").value.trim() : $("secret").value;
+  const candidates = signup ? [passwordFromPhone(typed)].filter(Boolean) : passwordCandidates(typed);
+  if (!candidates.length) {
+    return authMessage(signup
+      ? "Escribe tu número de WhatsApp completo, con código de país (por ejemplo +57 300 000 0000)."
+      : "Escribe tu contraseña. Si no la has cambiado, es tu número de WhatsApp.", true);
   }
 
   const btn = $("auth-submit");
   btn.disabled = true;
   authMessage("");
   try {
-    if (mode === "signup") {
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: profile.name } } });
+    if (signup) {
+      const { data, error } = await supabase.auth.signUp({ email, password: candidates[0] });
       if (error) throw error;
-      // Guardamos los datos hasta tu primer ingreso (si confirmas por correo, se envían entonces).
-      store.set(PENDING, JSON.stringify(profile));
-      if (data.session) return await loadState();
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        return authMessage("Ya existe una cuenta con este correo. Usa la pestaña \"Entrar\".", true);
+      }
+      rememberPhone(typed);   // por si confirmas tu correo desde otro dispositivo
+      if (data.session) return await loadState(typed);
       authMessage("Te enviamos un correo para confirmar tu cuenta. Ábrelo y vuelve aquí para entrar.");
     } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      await loadState();
+      // Prueba la contraseña inicial (número) y, si no sirve, lo escrito tal cual.
+      let lastError = null, usedPhone = false;
+      for (const password of candidates) {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (!error) { lastError = null; usedPhone = password === passwordFromPhone(typed); break; }
+        lastError = error;
+        if (/not confirmed/i.test(error.message || "")) break;
+      }
+      if (lastError) throw lastError;
+      await loadState(usedPhone ? typed : null);
     }
   } catch (err) {
-    const notConfirmed = /not confirmed/i.test(err?.message || "");
+    const msg = err?.message || "";
     authMessage(
-      notConfirmed ? "Primero confirma tu correo: te enviamos un mensaje con un enlace."
-      : mode === "signup" ? "No pudimos crear tu cuenta. Revisa tus datos o intenta con otro correo."
-      : "No pudimos iniciar sesión. Revisa tu correo y contraseña.", true);
+      /not confirmed/i.test(msg) ? "Primero confirma tu correo: te enviamos un mensaje con un enlace."
+      : /already registered/i.test(msg) ? "Ya existe una cuenta con este correo. Usa la pestaña \"Entrar\"."
+      : signup ? "No pudimos crear tu cuenta. Revisa tus datos e intenta de nuevo."
+      : "No pudimos iniciar sesión. Revisa tu correo y tu contraseña. Si no la has cambiado, es tu número de WhatsApp.", true);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/* ---------- olvidé mi contraseña ---------- */
+$("forgot").addEventListener("click", async () => {
+  if (!configured) return;
+  const email = $("email").value.trim();
+  if (!email) return authMessage("Escribe tu correo electrónico arriba y vuelve a pulsar este enlace.", true);
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+  if (error) return authMessage("No pudimos enviar el correo ahora. Intenta de nuevo más tarde.", true);
+  authMessage("Si existe una cuenta con ese correo, te enviamos un enlace para crear una contraseña nueva.");
+});
+
+/* ---------- cambiar contraseña ---------- */
+function showPasswordForm(fromEmailLink) {
+  $("pwd-new").value = ""; $("pwd-new2").value = ""; $("pwd-msg").textContent = "";
+  $("pwd-title").textContent = fromEmailLink ? "Crea tu contraseña nueva" : "Cambiar contraseña";
+  $("pwd-lead").textContent = fromEmailLink
+    ? "Elige una contraseña nueva de al menos 8 caracteres."
+    : "Elige una contraseña nueva de al menos 8 caracteres. Desde ahora la usarás en lugar de tu número de WhatsApp.";
+  $("pwd-cancel").hidden = fromEmailLink;
+  show("pwd");
+}
+$("change-pwd").addEventListener("click", () => showPasswordForm(false));
+$("pwd-cancel").addEventListener("click", () => show("app"));
+$("pwd-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = $("pwd-submit"), msg = $("pwd-msg");
+  msg.textContent = ""; msg.className = "msg";
+  const problem = checkNewPassword($("pwd-new").value, $("pwd-new2").value);
+  if (problem) { msg.className = "msg err"; msg.textContent = problem; return; }
+  btn.disabled = true;
+  try {
+    const { error } = await supabase.auth.updateUser({ password: $("pwd-new").value });
+    if (error) {
+      msg.className = "msg err";
+      msg.textContent = /same|different/i.test(error.message || "")
+        ? "La contraseña nueva debe ser distinta de la actual."
+        : "No pudimos guardar la contraseña. Vuelve a entrar e inténtalo de nuevo.";
+      return;
+    }
+    recovering = false;
+    await loadState();
+    $("status").textContent = "Tu contraseña se actualizó. Úsala la próxima vez que entres.";
   } finally {
     btn.disabled = false;
   }
@@ -150,7 +223,8 @@ $("auth-form").addEventListener("submit", async (e) => {
 $("logout").addEventListener("click", async () => {
   try { await supabase.auth.signOut(); } catch {}
   state = null;
-  $("password").value = "";
+  $("email").value = ""; $("phone").value = ""; $("secret").value = "";
+  $("show-secret").checked = false; $("secret").type = "password";
   setMode("login");
   show("auth");
 });
@@ -159,7 +233,6 @@ $("logout").addEventListener("click", async () => {
 function showProfileForm(p = {}) {
   $("p-name").value = p.name || "";
   $("p-phone").value = p.phone || "";
-  $("p-city").value = p.city || "";
   $("p-country").value = p.country || "";
   $("p-msg").textContent = "";
   show("profile");
@@ -173,7 +246,7 @@ $("profile-form").addEventListener("submit", async (e) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { show("auth"); return; }
     const result = await saveProfile(session.user.id, {
-      name: $("p-name").value, phone: $("p-phone").value, city: $("p-city").value, country: $("p-country").value
+      name: $("p-name").value, phone: $("p-phone").value, country: $("p-country").value
     });
     if (!result.ok) { msg.className = "msg err"; msg.textContent = Object.values(result.errors).join(" "); return; }
     await loadState();
@@ -183,7 +256,8 @@ $("profile-form").addEventListener("submit", async (e) => {
 });
 
 /* ---------- panel ---------- */
-async function loadState() {
+async function loadState(typedPhone = null) {
+  if (recovering) return;
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) { show("auth"); return; }
   const user = session.user;
@@ -191,14 +265,15 @@ async function loadState() {
   try {
     let profile = await fetchProfile(user.id);
     if (!isComplete(profile)) {
-      const pending = readPending();
-      if (pending) {
-        await saveProfile(user.id, pending);
-        store.del(PENDING);
+      // ¿Ya nos diste tus datos al inscribirte? Los buscamos por tu correo y tu número de WhatsApp.
+      // Si la función aún no existe en la base de datos, se ignora el error y se pide el "último paso".
+      const phone = typedPhone || takePhone();
+      if (phone) {
+        await supabase.rpc("claim_roster_profile", { p_phone: phone });
         profile = await fetchProfile(user.id);
       }
       if (!isComplete(profile)) {
-        showProfileForm({ name: profile?.display_name ?? user.user_metadata?.full_name ?? "", phone: profile?.phone, city: profile?.city, country: profile?.country });
+        showProfileForm({ name: profile?.display_name ?? "", phone: profile?.phone ?? phone ?? "", country: profile?.country });
         return;
       }
     }
