@@ -43,7 +43,7 @@
         <label id="row-phone" hidden>Número de WhatsApp<input id="phone" type="tel" autocomplete="tel" placeholder="+57 300 000 0000"></label>
         <label id="row-secret">Contraseña<input id="secret" type="password" autocomplete="current-password"></label>
         <label class="check-inline" id="row-show"><input type="checkbox" id="show-secret"> Mostrar contraseña</label>
-        <p class="hint" id="auth-hint">Si no la has cambiado, tu contraseña es tu número de WhatsApp (con o sin código de país).</p>
+        <p class="hint" id="auth-hint">Si no la has cambiado, tu contraseña son los últimos 8 dígitos de tu número de WhatsApp. También puedes escribir el número completo.</p>
         <button class="btn" id="auth-submit" type="submit">Entrar</button>
         <p id="auth-msg" class="msg" role="status" aria-live="polite"></p>
         <button class="linkbtn dark" id="forgot" type="button">¿Olvidaste tu contraseña?</button>
@@ -56,7 +56,7 @@
   <section id="pwd" hidden>
     <div class="auth-card">
       <h1 id="pwd-title">Cambiar contraseña</h1>
-      <p class="lead" id="pwd-lead">Elige una contraseña nueva de al menos 8 caracteres. Desde ahora la usarás en lugar de tu número de WhatsApp.</p>
+      <p class="lead" id="pwd-lead">Elige una contraseña nueva de al menos 8 caracteres. Desde ahora la usarás en lugar de los últimos 8 dígitos de tu número de WhatsApp.</p>
       <form id="pwd-form" novalidate>
         <label>Contraseña nueva<input id="pwd-new" type="password" autocomplete="new-password"></label>
         <label>Repite la contraseña<input id="pwd-new2" type="password" autocomplete="new-password"></label>

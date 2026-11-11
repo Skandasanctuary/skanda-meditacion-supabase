@@ -107,8 +107,8 @@ function setMode(next) {
   $("row-show").hidden = signup;
   $("forgot").hidden = signup;
   $("auth-hint").textContent = signup
-    ? "Tu número de WhatsApp será tu contraseña inicial. Podrás cambiarla dentro de la app."
-    : "Si no la has cambiado, tu contraseña es tu número de WhatsApp (con o sin código de país).";
+    ? "Los últimos 8 dígitos de tu número de WhatsApp serán tu contraseña inicial. Podrás cambiarla dentro de la app."
+    : "Si no la has cambiado, tu contraseña son los últimos 8 dígitos de tu número de WhatsApp. También puedes escribir el número completo.";
   authMessage("");
 }
 function authMessage(text, isError = false) {
@@ -134,7 +134,7 @@ $("auth-form").addEventListener("submit", async (e) => {
   if (!candidates.length) {
     return authMessage(signup
       ? "Escribe tu número de WhatsApp completo, con código de país (por ejemplo +57 300 000 0000)."
-      : "Escribe tu contraseña. Si no la has cambiado, es tu número de WhatsApp.", true);
+      : "Escribe tu contraseña. Si no la has cambiado, son los últimos 8 dígitos de tu número de WhatsApp.", true);
   }
 
   const btn = $("auth-submit");
@@ -168,7 +168,7 @@ $("auth-form").addEventListener("submit", async (e) => {
       /not confirmed/i.test(msg) ? "Primero confirma tu correo: te enviamos un mensaje con un enlace."
       : /already registered/i.test(msg) ? "Ya existe una cuenta con este correo. Usa la pestaña \"Entrar\"."
       : signup ? "No pudimos crear tu cuenta. Revisa tus datos e intenta de nuevo."
-      : "No pudimos iniciar sesión. Revisa tu correo y tu contraseña. Si no la has cambiado, es tu número de WhatsApp.", true);
+      : "No pudimos iniciar sesión. Revisa tu correo y tu contraseña. Si no la has cambiado, son los últimos 8 dígitos de tu número de WhatsApp (o el número completo). Si aún no tienes cuenta, usa \"Crear cuenta\".", true);
   } finally {
     btn.disabled = false;
   }
@@ -190,7 +190,7 @@ function showPasswordForm(fromEmailLink) {
   $("pwd-title").textContent = fromEmailLink ? "Crea tu contraseña nueva" : "Cambiar contraseña";
   $("pwd-lead").textContent = fromEmailLink
     ? "Elige una contraseña nueva de al menos 8 caracteres."
-    : "Elige una contraseña nueva de al menos 8 caracteres. Desde ahora la usarás en lugar de tu número de WhatsApp.";
+    : "Elige una contraseña nueva de al menos 8 caracteres. Desde ahora la usarás en lugar de los últimos 8 dígitos de tu número de WhatsApp.";
   $("pwd-cancel").hidden = fromEmailLink;
   show("pwd");
 }

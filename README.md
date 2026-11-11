@@ -47,8 +47,9 @@ The phone numbers in the roster are never shown in the app.
 ## How login works
 * **Creating an account:** email + WhatsApp number. The **last 8 digits of the number** become the account's
   initial password (it works with or without the country code, and with spaces or dashes).
-* **Logging in:** email + "Contraseña". Until the person changes it, the password is their WhatsApp number. The app
-  tries the number first and then whatever was typed as a custom password, so both kinds work.
+* **Logging in:** email + "Contraseña". Until the person changes it, the password is the **last 8 digits of their
+  WhatsApp number**; typing the whole number also works. The app tries that first and then whatever was typed as a
+  custom password, so both kinds work.
 * **Changing the password:** once logged in, the **"Cambiar contraseña"** link (next to "Salir") lets them choose
   their own password (8+ characters). From then on the number no longer works; they log in with the new password.
 * **Forgot password:** the "¿Olvidaste tu contraseña?" link on the login screen sends an email with a link to create a
